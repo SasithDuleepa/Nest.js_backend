@@ -23,7 +23,16 @@ export class UsersController {
   }
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          cb(null, `${file.originalname}`);
+        },
+      }),
+    }),
+  )
   uploadUserWithFile(
     @Body() body: { name: string; email: string }, // Receive user data
     @UploadedFile() file: Express.Multer.File, // Receive file
@@ -34,7 +43,12 @@ export class UsersController {
     return {
       message: 'User data and file uploaded successfully!',
       user: body,
-      file: file.filename,
+      file: {
+        filename: file.filename,
+        url: `http://localhost:3000/uploads/${file.originalname}`, // Full URL
+        size: file.size,
+        mimetype: file.mimetype,
+      },
     };
   }
 }
