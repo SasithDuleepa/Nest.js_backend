@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Param, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Controller('users') // Base route: /users
 export class UsersController {
@@ -12,8 +22,19 @@ export class UsersController {
     return { id, name: 'John Doe' };
   }
 
-  @Post()
-  createUser(@Body() createUserDto: { name: string }) {
-    return { id: 2, name: createUserDto.name };
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadUserWithFile(
+    @Body() body: { name: string; email: string }, // Receive user data
+    @UploadedFile() file: Express.Multer.File, // Receive file
+  ) {
+    console.log('User Data:', body);
+    console.log('Uploaded File:', file);
+
+    return {
+      message: 'User data and file uploaded successfully!',
+      user: body,
+      file: file.filename,
+    };
   }
 }
