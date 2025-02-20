@@ -1,3 +1,4 @@
+import { UsersService } from './users.service';
 import {
   Controller,
   Get,
@@ -6,20 +7,22 @@ import {
   Body,
   UploadedFile,
   UseInterceptors,
+  Put,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 
 @Controller('users') // Base route: /users
 export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
   @Get()
   getAllUsers() {
-    return [{ id: 1, name: 'John Doe' }];
+    return this.usersService.getAllUsers();
   }
 
   @Get(':id')
-  getUserById(@Param('id') id: string) {
-    return { id, name: 'John Doe' };
+  async getUserById(@Param('id') id: number) {
+    return await this.usersService.getUserById(id);
   }
 
   @Post('upload')
@@ -28,27 +31,43 @@ export class UsersController {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
-          cb(null, `${file.originalname}`);
+          cb(null, `${Date.now()}-${file.originalname}`); // Prevent file name conflicts
         },
       }),
     }),
   )
-  uploadUserWithFile(
-    @Body() body: { name: string; email: string }, // Receive user data
-    @UploadedFile() file: Express.Multer.File, // Receive file
+  async uploadUserWithFile(
+    @Body() body: { name: string; email: string },
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    console.log('User Data:', body);
-    console.log('Uploaded File:', file);
+    const user = await this.usersService.createUserWithFile(
+      body.name,
+      body.email,
+      file,
+    );
 
     return {
       message: 'User data and file uploaded successfully!',
-      user: body,
-      file: {
-        filename: file.filename,
-        url: `http://localhost:3000/uploads/${file.originalname}`, // Full URL
-        size: file.size,
-        mimetype: file.mimetype,
-      },
+      user,
     };
+  }
+
+  @Put(':id')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          cb(null, `${Date.now()}-${file.originalname}`); // Prevent file name conflicts
+        },
+      }),
+    }),
+  )
+  async updateUser(
+    @Param('id') id: number,
+    @Body() updatedData: { name?: string; email?: string },
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return await this.usersService.updateUser(id, updatedData, file);
   }
 }
