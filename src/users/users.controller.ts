@@ -23,10 +23,10 @@ export class UsersController {
   getProfile(@Request() req) {
     return req.user; // Get user details from JWT token
   }
-  @Get()
-  getAllUsers() {
-    return this.usersService.getAllUsers();
-  }
+  // @Get()
+  // getAllUsers() {
+  //   return this.usersService.getAllUsers();
+  // }
 
   @Get(':id')
   async getUserById(@Param('id') id: number) {
