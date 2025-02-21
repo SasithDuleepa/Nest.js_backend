@@ -8,13 +8,21 @@ import {
   UploadedFile,
   UseInterceptors,
   Put,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('users') // Base route: /users
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Request() req) {
+    return req.user; // Get user details from JWT token
+  }
   @Get()
   getAllUsers() {
     return this.usersService.getAllUsers();
@@ -37,12 +45,13 @@ export class UsersController {
     }),
   )
   async uploadUserWithFile(
-    @Body() body: { name: string; email: string },
+    @Body() body: { name: string; email: string; password: string },
     @UploadedFile() file: Express.Multer.File,
   ) {
     const user = await this.usersService.createUserWithFile(
       body.name,
       body.email,
+      body.password,
       file,
     );
 

@@ -13,4 +13,7 @@ export class User {
 
   @Column({ nullable: true })
   fileName: string;
+
+  @Column()
+  password: string;
 }

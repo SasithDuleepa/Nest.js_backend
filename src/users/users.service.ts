@@ -4,23 +4,28 @@ import { Repository } from 'typeorm';
 import { User } from './users.entity';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as bcrypt from 'bcrypt';
+import { promises } from 'dns';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async createUserWithFile(
     name: string,
     email: string,
+    password: string,
     file: Express.Multer.File,
   ): Promise<User> {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = this.usersRepository.create({
       name,
       email,
-
+      password: hashedPassword,
       fileName: file.filename,
       // fileUrl: `http://localhost:3000/uploads/${file.filename}`,
       // fileSize: file.size,
@@ -69,5 +74,9 @@ export class UsersService {
     }
 
     return await this.usersRepository.save(user);
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { email } });
   }
 }

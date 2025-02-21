@@ -4,13 +4,12 @@ import { AppService } from './app.service';
 import { UsersController } from './users/users.controller';
 import { UserModule } from './users/user.module';
 import { AuthMiddleware } from './common/middleware/auth.middleware';
-import { LoginModule } from './login/login.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     UserModule,
-    LoginModule,
     TypeOrmModule.forRoot({
       type: 'mysql', // Database type
       host: 'localhost', // Database host
@@ -21,6 +20,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       autoLoadEntities: true, // Automatically load entities
       synchronize: true, // Sync DB schema (disable in production)
     }),
+    AuthModule,
   ],
   controllers: [AppController, UsersController],
   providers: [AppService],
