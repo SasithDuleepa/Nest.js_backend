@@ -6,6 +6,7 @@ import { UserModule } from './users/user.module';
 import { AuthMiddleware } from './common/middleware/auth.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { StudentsModule } from './students/students.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AuthModule } from './auth/auth.module';
       synchronize: true, // Sync DB schema (disable in production)
     }),
     AuthModule,
+    StudentsModule,
   ],
   controllers: [AppController, UsersController],
   providers: [AppService],
